@@ -19,13 +19,13 @@ object DependencyCalculator {
   }
   implicit def nodeCoercer(node: Node) = new NodeExtension(node)
   
-  def getDependencies(baseFolder: String, buildFileName:String, targetName:String): List[(String, String)] = {
-    
-	def getAllTargetNodes(baseFolder: String, buildFileName: String): NodeSeq = {
-	  val antFile = scala.xml.XML.loadFile(new File(baseFolder, buildFileName))   
+  def getDependencies(buildFileResolver: String => NodeSeq, buildFileName: String, targetName:String): List[(String, String)] = {
+     
+	def getAllTargetNodes(buildFileName: String): NodeSeq = {
+	  val antFile = buildFileResolver(buildFileName) 
 	  (antFile \ "target") ++
 	  (antFile \ "import").foldLeft[NodeSeq](NodeSeq.Empty)(
-			  					(ns, node) => ns ++ getAllTargetNodes(baseFolder, node.getAttributeValue("file").get))
+			  					(ns, node) => ns ++ getAllTargetNodes(node.getAttributeValue("file").get))
 	}
 	
 	def getDependenciesInternal(targetName: String, targets: NodeSeq): List[(String, String)] = {
@@ -39,6 +39,6 @@ object DependencyCalculator {
 	  else List()
 	}
 	
-    getDependenciesInternal(targetName, getAllTargetNodes(baseFolder, buildFileName))
+    getDependenciesInternal(targetName, getAllTargetNodes(buildFileName))
   }
 }
