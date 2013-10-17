@@ -22,7 +22,7 @@ object DependencyCalculator {
   }
   implicit def nodeCoercer(node: Node) = new NodeExtension(node)
   
-  def getDependencies(buildFileResolver: String => NodeSeq, buildFileName: String, targetName:String): List[(String, String)] = {
+  def getDependencies(buildFileResolver: String => NodeSeq, buildFileName: String, targetName:String): Map[String, List[String]] = {
      
 	def getAllTargetNodes(buildFileName: String): NodeSeq = {
 	  val antFile = buildFileResolver(buildFileName) 
@@ -31,15 +31,18 @@ object DependencyCalculator {
 			  					(ns, node) => ns ++ getAllTargetNodes(node.getAttributeValue("file").get))
 	}
 	
-	def getDependenciesInternal(targetName: String, targets: NodeSeq): List[(String, String)] = {
+	def getDependenciesInternal(targetName: String, targets: NodeSeq): Map[String, List[String]] = {
 	  val target = targets.find(currentTarget => currentTarget.attributes.exists(md => md.key == "name" && md.value.text == targetName))
 	  assert(target.nonEmpty)
 	  val directDepends = target.get.getAttributeValue("depends")
 	  if (directDepends isDefined) {
 	    val directDependsList = directDepends.get.split(",").map(str => str.trim)
-	    directDependsList.foldLeft[List[(String, String)]](List())((list, str) => (targetName, str) :: list ++ getDependenciesInternal(str, targets))
+	    directDependsList.foldLeft[Map[String, List[String]]](Map())((map, str) =>
+	      map // old Map
+	       + (targetName -> (str :: map.getOrElse(targetName, List()))) // The entry of targetName + currentDepend
+	      ++ getDependenciesInternal(str, targets)) // Recursive dependencies of currentDepend
 	  }
-	  else List()
+	  else Map()
 	}
 	
     getDependenciesInternal(targetName, getAllTargetNodes(buildFileName))

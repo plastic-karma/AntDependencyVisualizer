@@ -8,7 +8,7 @@ import org.jgraph.graph.DefaultEdge
 
 object AntJGraphAdapter {
 
-  def generateJGraph(dependencies: List[(String, String)]): JGraph = {
+  def generateJGraph(dependencies: Map[String, List[String]]): JGraph = {
     def createGraph(cells: List[DefaultGraphCell]): JGraph = {
       val graph = new JGraph(new DefaultGraphModel)
       cells.foreach (cell => graph.getGraphLayoutCache().insert(cell))
@@ -31,15 +31,17 @@ object AntJGraphAdapter {
         edge
     }
     
-    def generateJGraphInternal(dependencies: List[(String, String)], vertecies : Map[String, DefaultGraphCell], edges: List[DefaultGraphCell]): JGraph = {
-      dependencies match {
-        case Nil => createGraph(edges ++ vertecies.values)
-        case x :: xs => {
-          val (source, target) = x
-          val sourceCell = vertecies getOrElse(source, createVertex(source))
-          val targetCell = vertecies getOrElse(target, createVertex(target))
-          generateJGraphInternal(xs, vertecies + (source -> sourceCell, target -> targetCell), createEdge(sourceCell, targetCell) :: edges)
-        }
+    def generateJGraphInternal(dependencies: Map[String, List[String]], vertecies : Map[String, DefaultGraphCell], edges: List[DefaultGraphCell]): JGraph = {
+      if (dependencies.isEmpty) createGraph(edges ++ vertecies.values)
+      else {
+    	  val (source, targets) = dependencies.head
+    	  if (targets.isEmpty) generateJGraphInternal(dependencies - source, vertecies, edges)
+    	  else {
+    		  val sourceCell = vertecies getOrElse(source, createVertex(source))
+    		  val targetCell = createVertex(targets.head)
+    		  generateJGraphInternal(dependencies + (source -> targets.tail), vertecies + (source -> sourceCell, targets.head -> targetCell), createEdge(sourceCell, targetCell) :: edges)
+    	  }
+        
       }
     }
     generateJGraphInternal(dependencies, Map(), List())
