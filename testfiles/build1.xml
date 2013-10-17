@@ -1,0 +1,7 @@
+<project name="AGV" basedir=".">
+	<import file="build2.xml" />
+	<import file="folder1/build3.xml"/>
+
+	<target name="T1" depends="T2, T3"/>
+	<target name="T2" depends="T4, T5" />
+</project>

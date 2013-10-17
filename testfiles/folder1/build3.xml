@@ -1,0 +1,4 @@
+<project name="AGV" basedir=".">
+	<target name="T3" depends="T5"/>
+	<target name="T5" />
+</project>
