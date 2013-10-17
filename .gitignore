@@ -1,1 +1,8 @@
 bin
+target
+project
+.project
+.classpath
+.settings
+.worksheet
+.cache
