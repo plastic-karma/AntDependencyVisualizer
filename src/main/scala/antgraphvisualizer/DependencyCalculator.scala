@@ -4,7 +4,7 @@ import scala.xml.NodeSeq
 import java.io.File
 import scala.xml.Node
 
-object AntGraphVisualizer {
+object DependencyCalculator {
   
   class NodeExtension(node: Node) {
     def getAttributeValue(attributeName: String): Option[String] = {
@@ -34,7 +34,7 @@ object AntGraphVisualizer {
 	  val directDepends = target.get.getAttributeValue("depends")
 	  if (directDepends isDefined) {
 	    val directDependsList = directDepends.get.split(",").map(str => str.trim)
-	    directDependsList.foldLeft[List[(String, String)]](List())((list, str) => (targetName, str) :: list ++ getDependenciesInternal(str, targets))
+	    directDependsList.foldLeft[List[(String, String)]](List())((list, str) => (targetName, str) :: (targetName, str) :: list ++ getDependenciesInternal(str, targets))
 	  }
 	  else List()
 	}

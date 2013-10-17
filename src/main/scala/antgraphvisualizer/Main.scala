@@ -10,7 +10,7 @@ import com.jgraph.layout.hierarchical.JGraphHierarchicalLayout
 object Main {
 
   def main(args: Array[String]): Unit = {
-    val dependencies = AntGraphVisualizer.getDependencies(
+    val dependencies = DependencyCalculator.getDependencies(
   											"C:/Source/WorkspacePosy/Build",
   											"build_posy_batch.xml",
   											"build_all_posy_batch"
