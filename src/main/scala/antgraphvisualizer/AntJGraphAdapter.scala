@@ -38,7 +38,7 @@ object AntJGraphAdapter {
     	  if (targets.isEmpty) generateJGraphInternal(dependencies - source, vertecies, edges)
     	  else {
     		  val sourceCell = vertecies getOrElse(source, createVertex(source))
-    		  val targetCell = createVertex(targets.head)
+    		  val targetCell = vertecies getOrElse(targets.head, createVertex(targets.head))
     		  generateJGraphInternal(dependencies + (source -> targets.tail), vertecies + (source -> sourceCell, targets.head -> targetCell), createEdge(sourceCell, targetCell) :: edges)
     	  }
         
