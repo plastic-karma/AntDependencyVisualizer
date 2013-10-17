@@ -1,5 +1,8 @@
 package antgraphvisualizer
 
+import scala.language.implicitConversions
+import scala.language.postfixOps
+
 import scala.xml.NodeSeq
 import java.io.File
 import scala.xml.Node
@@ -34,7 +37,7 @@ object DependencyCalculator {
 	  val directDepends = target.get.getAttributeValue("depends")
 	  if (directDepends isDefined) {
 	    val directDependsList = directDepends.get.split(",").map(str => str.trim)
-	    directDependsList.foldLeft[List[(String, String)]](List())((list, str) => (targetName, str) :: (targetName, str) :: list ++ getDependenciesInternal(str, targets))
+	    directDependsList.foldLeft[List[(String, String)]](List())((list, str) => (targetName, str) :: list ++ getDependenciesInternal(str, targets))
 	  }
 	  else List()
 	}
