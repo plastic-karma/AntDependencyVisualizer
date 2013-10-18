@@ -24,11 +24,27 @@ object DependencyCalculator {
   
   def getDependencies(buildFileResolver: String => NodeSeq, buildFileName: String, targetName:String): Map[String, List[String]] = {
      
-	def getAllTargetNodes(buildFileName: String): NodeSeq = {
+	def getAllTargetNodesAndProperties(buildFileName: String, properties: Map[String, String]): (NodeSeq, Map[String, String]) = {
 	  val antFile = buildFileResolver(buildFileName) 
-	  (antFile \ "target") ++
-	  (antFile \ "import").foldLeft[NodeSeq](NodeSeq.Empty)(
-			  					(ns, node) => ns ++ getAllTargetNodes(node.getAttributeValue("file").get))
+	  val properties = (antFile \ "property").filter(node => node.hasAttribute("name") && node.hasAttribute("value")).
+	  											foldLeft(Map[String, String]())(
+	  											    (map, node) => map + ((node.getAttributeValue("name").get -> node.getAttributeValue("value").get)))
+	  
+	  (antFile \ "import").foldLeft[(NodeSeq, Map[String, String])]((antFile \ "target", properties))(
+			  					(p, node) => {
+			  					  val (ns, properties) = p
+			  					  val (newTargets, newProperties) = 
+			  					    getAllTargetNodesAndProperties(
+			  					        replaceProperties(node.getAttributeValue("file").get, properties), 
+			  					        properties
+		  					        )
+			  					  (newTargets ++ ns, newProperties ++ properties)
+			  					})
+	}
+	
+	def replaceProperties(input: String, properties: Map[String, String]): String = {
+	  val pattern = "\\$\\{(.+)\\}".r
+	  pattern.replaceAllIn(input, m => properties.getOrElse(m.group(1), ""))
 	}
 	
 	def getDependenciesInternal(targetName: String, targets: NodeSeq): Map[String, List[String]] = {
@@ -45,6 +61,6 @@ object DependencyCalculator {
 	  else Map()
 	}
 	
-    getDependenciesInternal(targetName, getAllTargetNodes(buildFileName))
+    getDependenciesInternal(targetName, getAllTargetNodesAndProperties(buildFileName, Map())._1)
   }
 }

@@ -49,6 +49,39 @@ class DependencyCalculatorImportSpec extends FlatSpec with Matchers {
             Map("T1" -> List("T3", "T2"), "T2" -> List("T4"), "T3" -> List("T5")))
   }
   
+  "T1 in B1 depends on T2 in B2. T2 depends on T3. Import of B2 uses property defined in B3" should "produce T1 -> (T2), T2 -> (T3)" in {
+  	  	val buildFiles = Map(
+	  	    "B1" -> 
+	  	              <project>
+	  	    			<import file="B3" />
+	  	    			<import file="${import.b2}/B2" />
+        				<target name="T1" depends="T2"/>
+	  	    		  </project>,
+    		"propValue/B2" ->
+		             <project>
+	  	    		   <target name="T2" depends="T3" />
+	  	    		   <target name="T3"/>
+	  	    		 </project>,
+    		"B3" ->
+		              <project>
+	  	    		 	<property name="import.b2" value="propValue" />
+	  	    		 </project>
+  			)    
+        DependencyCalculator.getDependencies(buildFileRepository(buildFiles), "B1", "T1") should equal (Map("T1" -> List("T2"), "T2" -> List("T3")))
+  }
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
   
   
   
