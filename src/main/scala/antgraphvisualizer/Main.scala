@@ -1,39 +1,48 @@
 package antgraphvisualizer
 
-import com.jgraph.layout.graph.JGraphSimpleLayout
-import com.jgraph.layout.JGraphFacade
-import org.jgraph.JGraph
 import javax.swing.JFrame
 import javax.swing.JScrollPane
-import com.jgraph.layout.hierarchical.JGraphHierarchicalLayout
 import java.io.File
+import com.mxgraph.view.mxGraph
+import com.mxgraph.swing.mxGraphComponent
+import com.mxgraph.layout.mxIGraphLayout
+import com.mxgraph.layout.mxFastOrganicLayout
+import com.mxgraph.layout.hierarchical.mxHierarchicalLayout
 
 object Main {
 
   def main(args: Array[String]): Unit = {
-    val dependencies = DependencyCalculator.getDependencies(
-    									    str => scala.xml.XML.loadFile(new File("./testfiles", str)),
-  											"build1.xml",
-  											"T1"
+//    val dependencies = DependencyCalculator.getDependencies(
+//    									    str => scala.xml.XML.loadFile(new File("/Users/benjaminrogge/workspace-export/Build", str)),
+//  											"build_posy_batch.xml",
+//  											"build_all_posy_batch"
+  											val dependencies = DependencyCalculator.getDependencies(
+  													str => scala.xml.XML.loadFile(new File("./testfiles", str)),
+  													"build1.xml",
+  													"T1"
 	)
   	val graph = antgraphvisualizer.AntJGraphAdapter.generateJGraph(dependencies)
 
  
  
     //val graphLayout = new JGraphSimpleLayout(JGraphSimpleLayout.TYPE_TILT, 400, 400)
-    val graphLayout = new JGraphHierarchicalLayout
-    val graphFacade = new JGraphFacade(graph)     
-    graphLayout.run(graphFacade);
-	val nestedMap = graphFacade.createNestedMap(true, true)
 
-	graph.getGraphLayoutCache().edit(nestedMap)
   
     new SampleGraph(graph)                          
   }
   
-  class SampleGraph(graph: JGraph) extends JFrame {
+  class SampleGraph(graph: mxGraph) extends JFrame {
 	setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE)
-	getContentPane().add(new JScrollPane(graph))
+	
+        val graphLayout = new mxHierarchicalLayout(graph);
+
+        // layout using morphing
+        graph.getModel().beginUpdate();
+        graphLayout.execute(graph.getDefaultParent());
+        graph.getModel().endUpdate()
+	
+	val graphComponent = new mxGraphComponent(graph);
+	getContentPane().add(new JScrollPane(graphComponent))
 	pack()
 	setVisible(true)
   }

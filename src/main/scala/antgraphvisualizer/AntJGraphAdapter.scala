@@ -1,49 +1,29 @@
 package antgraphvisualizer
 
-import org.jgraph.JGraph
-import org.jgraph.graph.DefaultGraphCell
-import org.jgraph.graph.DefaultGraphModel
-import org.jgraph.graph.GraphConstants
-import org.jgraph.graph.DefaultEdge
+import com.mxgraph.view.mxGraph
+
 
 object AntJGraphAdapter {
 
-  def generateJGraph(dependencies: Map[String, List[String]]): JGraph = {
-    def createGraph(cells: List[DefaultGraphCell]): JGraph = {
-      val graph = new JGraph(new DefaultGraphModel)
-      cells.foreach (cell => graph.getGraphLayoutCache().insert(cell))
-      graph
+  def generateJGraph(dependencies: Map[String, List[String]]): mxGraph = {
+    
+    
+    def createVertex(graph: mxGraph, name: String): Object = {
+      graph.insertVertex(null, name, name, 10, 10, 20, 40)
     }
     
-    def createVertex(name: String): DefaultGraphCell = {
-      val vertex = new DefaultGraphCell(name)
-      vertex.addPort
-      GraphConstants.setAutoSize(vertex.getAttributes(), true)
-      vertex
+    def generateJGraphInternal(graph: mxGraph, dependencies: Map[String, List[String]], vertecies: Map[String, Object]): mxGraph = {
+    	if (dependencies.isEmpty) graph
+    	else {
+    	  val (target, targetDependencies) = dependencies.head
+    	  val targetVertex = vertecies.getOrElse(target, createVertex(graph, target))
+    	  val dependentVertecies = targetDependencies.foldLeft[Map[String, Object]](Map())((map, currentTarget) => 
+    	    map + (currentTarget -> vertecies.getOrElse(currentTarget,createVertex(graph, currentTarget))))
+    	  dependentVertecies.values.foreach(v => graph.insertEdge(null, "", null, targetVertex, v))
+    	  generateJGraphInternal(graph, dependencies.tail, vertecies ++ dependentVertecies)
+    	}
     }
     
-    def createEdge(source: DefaultGraphCell, target: DefaultGraphCell): DefaultGraphCell = {
-        val edge = new DefaultEdge() 
-        GraphConstants.setLineEnd(edge.getAttributes(), GraphConstants.ARROW_CLASSIC);
-        GraphConstants.setEndFill(edge.getAttributes(), true);
-        edge.setSource(source.getChildAt(0))
-        edge.setTarget(target.getChildAt(0))
-        edge
-    }
-    
-    def generateJGraphInternal(dependencies: Map[String, List[String]], vertecies : Map[String, DefaultGraphCell], edges: List[DefaultGraphCell]): JGraph = {
-      if (dependencies.isEmpty) createGraph(edges ++ vertecies.values)
-      else {
-    	  val (source, targets) = dependencies.head
-    	  if (targets.isEmpty) generateJGraphInternal(dependencies - source, vertecies, edges)
-    	  else {
-    		  val sourceCell = vertecies getOrElse(source, createVertex(source))
-    		  val targetCell = vertecies getOrElse(targets.head, createVertex(targets.head))
-    		  generateJGraphInternal(dependencies + (source -> targets.tail), vertecies + (source -> sourceCell, targets.head -> targetCell), createEdge(sourceCell, targetCell) :: edges)
-    	  }
-        
-      }
-    }
-    generateJGraphInternal(dependencies, Map(), List())
+    generateJGraphInternal(new mxGraph, dependencies, Map())
   }
 }

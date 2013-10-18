@@ -23,7 +23,7 @@ object DependencyCalculator {
       if (attribute.isEmpty) None
       else Option(attribute.head.text)
     }
-    
+    	
     /**
      * Returns true iff an attribute with the given name exists in the node.
      */
