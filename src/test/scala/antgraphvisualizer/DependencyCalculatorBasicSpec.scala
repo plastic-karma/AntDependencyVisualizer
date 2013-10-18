@@ -5,7 +5,7 @@ import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.Matchers
 import scala.xml.NodeSeq
 
-class DependencyCalculatorSpec extends FlatSpec with Matchers {
+class DependencyCalculatorBasicSpec extends FlatSpec with Matchers {
   
   
   "No dependency attribute" should "produce empty dependency list" in {
