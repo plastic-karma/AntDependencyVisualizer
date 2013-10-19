@@ -28,10 +28,9 @@ object Main {
     graphLayout.execute(graph.getDefaultParent());
     graph.getModel().endUpdate()
     val endTimeLayout = System.currentTimeMillis()
-    
-    println("Dependency time: " + (endTimeDependencies - startTimeDependencies) / 1000.0)
-    println("mxGraph    time: " + (endTimeGraph - endTimeDependencies) / 1000.0)
-    println("layout     time: " + (endTimeLayout - endTimeGraph) / 1000.0)
+    println("Dependency   time: " + (endTimeDependencies - startTimeDependencies) / 1000.0)
+    println("mxGraph      time: " + (endTimeGraph - endTimeDependencies) / 1000.0)
+    println("layout       time: " + (endTimeLayout - endTimeGraph) / 1000.0)
     
     
     
