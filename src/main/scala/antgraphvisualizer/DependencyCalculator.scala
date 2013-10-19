@@ -74,20 +74,26 @@ object DependencyCalculator {
 	/**
 	 * Interal recursive function to calculate dependencies.
 	 */
-	def getDependenciesInternal(targetName: String, targets: NodeSeq): Map[String, List[String]] = {
-	  val target = targets.find(currentTarget => currentTarget.attributes.exists(md => md.key == "name" && md.value.text == targetName))
-	  assert(target.nonEmpty)
-	  val directDepends = target.get.getAttributeValue("depends")
-	  if (directDepends isDefined) {
-	    val directDependsList = directDepends.get.split(",").map(str => str.trim)
-	    directDependsList.foldLeft[Map[String, List[String]]](Map())((map, str) =>
-	      map // old Map
-	       + (targetName -> (str :: map.getOrElse(targetName, List()))) // The entry of targetName + currentDepend
-	      ++ getDependenciesInternal(str, targets)) // Recursive dependencies of currentDepend
+	def getDependenciesInternal(targetName: String, targets: NodeSeq, visitedNodes: List[String]): Map[String, List[String]] = {
+	  if (visitedNodes.contains(targetName)) Map()
+	  else {
+		  val target = targets.find(currentTarget => currentTarget.attributes.exists(md => md.key == "name" && md.value.text == targetName))
+		  assert(target.nonEmpty)
+		  val directDepends = target.get.getAttributeValue("depends")
+		  if (directDepends isDefined) {
+		    val directDependsList = directDepends.get.split(",").map(str => str.trim)
+		    directDependsList.foldLeft[Map[String, List[String]]](Map())((map, str) =>
+		      map // old Map
+		       + (targetName -> (str :: map.getOrElse(targetName, List()))) // The entry of targetName + currentDepend
+		      ++ getDependenciesInternal(str, targets, visitedNodes ++ map.keys)) // Recursive dependencies of currentDepend
+		  }
+		  else Map()
 	  }
-	  else Map()
 	}
-	
-    getDependenciesInternal(targetName, getAllTargetNodesAndProperties(buildFileName, Map())._1)
+	val startTime = System.currentTimeMillis()
+	val targets = getAllTargetNodesAndProperties(buildFileName, Map())._1
+	val endTime = System.currentTimeMillis()
+	println ("targets " + ((endTime - startTime) / 1000.0))
+    getDependenciesInternal(targetName, targets, List())
   }
 }
