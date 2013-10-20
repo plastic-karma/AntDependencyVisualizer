@@ -6,6 +6,7 @@ import scala.xml.NodeSeq
 import java.io.File
 import scala.xml.Node
 
+
 object DependencyCalculator {
   
   /**
@@ -75,21 +76,22 @@ object DependencyCalculator {
 		  
 	      if (visitedImports.contains(buildFileName)) (NodeSeq.Empty, Map(), visitedImports)
 	      else {
-	    	  val allVisitedImports = buildFileName :: visitedImports
 			  val antFile = buildFileResolver(buildFileName) 
-			  val allExistingProperties = 
-			    getProperties((antFile \ "property").filter(node => node.hasAttribute("name") && node.hasAttribute("value"))) ++ existingProperties
-			  
+			  val allVisitedImports = buildFileName :: visitedImports
+			  val allExistingProperties = existingProperties ++ getProperties((antFile \ "property").filter(node => 
+			    node.hasAttribute("name") && node.hasAttribute("value")))
 			  
 			  (antFile \ "import").foldLeft[(NodeSeq, Map[String, String], List[String])]((antFile \ "target", allExistingProperties, allVisitedImports))(
 					  (p, node) => {
-						  val (ns, currentProperties, currentVisitedImports) = p
-								  val (newTargets, newProperties, newVisitedImports) =  getAllTargetNodesAndPropertiesInternal(
-										  replaceProperties(node.getAttributeValue("file").get, currentProperties), 
-										  currentProperties, currentVisitedImports)
-										  (newTargets ++ ns, newProperties ++ currentProperties, newVisitedImports)
-					  }
-					  )
+						  val (currentTargets, currentProperties, currentVisitedImports) = p
+						  val (newTargets, newProperties, newVisitedImports) =  
+						    getAllTargetNodesAndPropertiesInternal(
+								  replaceProperties(node.getAttributeValue("file").get, currentProperties), 
+								  currentProperties, 
+								  currentVisitedImports
+						    )
+						  (newTargets ++ currentTargets, newProperties ++ currentProperties, newVisitedImports)
+					  })
 	      }
 		}
 		getAllTargetNodesAndPropertiesInternal(buildFileName, Map(), List())._1

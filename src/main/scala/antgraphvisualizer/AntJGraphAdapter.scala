@@ -8,7 +8,7 @@ object AntJGraphAdapter {
   def generateJGraph(dependencies: Map[String, List[String]]): mxGraph = {
     
     def createVertex(graph: mxGraph, name: String): Object = {
-      graph.insertVertex(null, name, name, 10, 10, 20, 40)
+      graph.insertVertex(null, name, name, 10, 10, 70, 20)
     }
     
     def createEdge(graph: mxGraph, source: Object, target: Object): Unit = {

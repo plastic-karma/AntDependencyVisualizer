@@ -11,6 +11,7 @@ import com.mxgraph.layout.hierarchical.mxHierarchicalLayout
 import com.mxgraph.layout.mxCircleLayout
 import com.mxgraph.layout.mxOrganicLayout
 import com.mxgraph.layout.mxStackLayout
+import com.mxgraph.util.mxConstants
 
 object Main {
 
@@ -26,6 +27,7 @@ object Main {
   	val graphLayout = new mxHierarchicalLayout(graph);
     graph.getModel().beginUpdate();
     graphLayout.execute(graph.getDefaultParent());
+    graph.setCellStyle( "edgeStyle=entityRelationEdgeStyle");
     graph.getModel().endUpdate()
     val endTimeLayout = System.currentTimeMillis()
     println("Dependency   time: " + (endTimeDependencies - startTimeDependencies) / 1000.0)
