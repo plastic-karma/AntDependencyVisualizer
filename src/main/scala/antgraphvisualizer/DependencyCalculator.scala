@@ -42,7 +42,9 @@ object DependencyCalculator {
      * Maps a Sequence of Nodes to map where the keys are coming from the name attribute and the values are coming from the value attribute 
      */
     def getProperties(nodes: NodeSeq): Map[String, String] = {
-      nodes.foldLeft(Map[String, String]())((map, node) => map + ((node.getAttributeValue("name").get -> node.getAttributeValue("value").get)))
+      //nodes.par.flatMap(node => List((node.getAttributeValue("name").get -> node.getAttributeValue("value").get))).toMap.seq
+      nodes.flatMap(node => List((node.getAttributeValue("name").get -> node.getAttributeValue("value").get))).toMap
+      //nodes.foldLeft(Map[String, String]())((map, node) => map + ((node.getAttributeValue("name").get -> node.getAttributeValue("value").get)))
     }
     
     lazy val PROPERTY_PATTERN = "\\$\\{(.+)\\}".r
@@ -111,19 +113,19 @@ object DependencyCalculator {
 	    visitedNodes: List[String])
 	: Map[String, List[String]] = {
 	  
-	  if (visitedNodes.contains(targetName)) Map()
+	  if (visitedNodes.contains(targetName)) Map() withDefaultValue(List())
 	  else {
 		  val target = targets.find(currentTarget => currentTarget.attributes.exists(md => md.key == "name" && md.value.text == targetName))
 		  assert(target.nonEmpty)
 		  val directDepends = target.get.getAttributeValue("depends")
 		  if (directDepends isDefined) {
 		    val directDependsList = directDepends.get.split(",").map(str => str.trim)
-		    directDependsList.foldLeft[Map[String, List[String]]](Map())((map, str) =>
+		    directDependsList.foldLeft[Map[String, List[String]]](Map() withDefaultValue(List()))((map, str) =>
 		      map
-		       + (targetName -> (str :: map.getOrElse(targetName, List())))
+		       + (targetName -> (str :: map(targetName)))
 		      ++ getDependenciesInternal(str, targets, visitedNodes ++ map.keys))
 		  }
-		  else Map()
+		  else Map() withDefaultValue(List())
 	  }
 	}
 	
