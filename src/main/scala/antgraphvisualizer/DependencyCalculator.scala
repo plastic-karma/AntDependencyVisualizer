@@ -43,8 +43,12 @@ object DependencyCalculator {
      */
     def getProperties(nodes: NodeSeq): Map[String, String] = {
       //nodes.par.flatMap(node => List((node.getAttributeValue("name").get -> node.getAttributeValue("value").get))).toMap.seq
-      nodes.flatMap(node => List((node.getAttributeValue("name").get -> node.getAttributeValue("value").get))).toMap
+      //nodes.flatMap(node => List((node.getAttributeValue("name").get -> node.getAttributeValue("value").get))).toMap
       //nodes.foldLeft(Map[String, String]())((map, node) => map + ((node.getAttributeValue("name").get -> node.getAttributeValue("value").get)))
+	  
+      (for (node <- nodes if (node.hasAttribute("name") && node.hasAttribute("value"))) 
+		  yield (node.getAttributeValue("name").get -> node.getAttributeValue("value").get)
+	  ).toMap
     }
     
     lazy val PROPERTY_PATTERN = "\\$\\{(.+)\\}".r
@@ -56,8 +60,6 @@ object DependencyCalculator {
 	  PROPERTY_PATTERN.replaceAllIn(input, m => properties.getOrElse(m.group(1), ""))
 	}
    
-    
-    
     /**
      * Returns all target nodes from a given file and it's imports.
      */
@@ -101,7 +103,7 @@ object DependencyCalculator {
    
 	
 	/**
-	 * Interal recursive function to calculate dependencies.
+	 * Internal recursive function to calculate dependencies.
 	 * @param targetName The name of the target to calculate dependencies for.
 	 * @param targets All available ant targets to calculate dependencies from.
 	 * @param visitedNodes Auxiliary parameter to keep track of already visited targets, 
@@ -128,7 +130,6 @@ object DependencyCalculator {
 		  else Map() withDefaultValue(List())
 	  }
 	}
-	
 	
 	/*
 	 * Actual entry point for getDependencies

@@ -19,13 +19,17 @@ object AntJGraphAdapter {
     	if (dependencies.isEmpty) graph
     	else {
     	  val (target, targetDependencies) = dependencies.head
-    	  val targetVertex = vertecies.getOrElse(target, createVertex(graph, target))
-    	  val dependentVertecies = targetDependencies.foldLeft[Map[String, Object]](Map())((map, currentTarget) => 
-    	    map + (currentTarget -> vertecies.getOrElse(currentTarget,createVertex(graph, currentTarget))))
+    	  val targetVertex = vertecies(target)
+	    
+    	  val dependentVertecies = (
+    	      for(currentTarget <- targetDependencies) yield (currentTarget -> vertecies(currentTarget))
+	      ).toMap
+    	    
     	  dependentVertecies.values.foreach(v => createEdge(graph, targetVertex, v))
     	  generateJGraphInternal(graph, dependencies.tail, vertecies  + (target -> targetVertex) ++ dependentVertecies)
     	}
     }
-    generateJGraphInternal(new mxGraph, dependencies, Map())
+    val graph = new mxGraph
+    generateJGraphInternal(graph, dependencies, Map() withDefault(target => createVertex(graph, target)))
   }
 }
