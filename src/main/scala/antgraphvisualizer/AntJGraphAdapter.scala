@@ -24,7 +24,7 @@ object AntJGraphAdapter {
 		      for(currentTarget <- targetDependencies) yield (currentTarget -> vertecies(currentTarget))
 	      ).toMap
 		    
-		 dependentVertecies.values.par.foreach(v => createEdge(graph, targetVertex, v))
+		 dependentVertecies.values.foreach(v => createEdge(graph, targetVertex, v))
 		 generateJGraphInternal(graph, dependencies.tail, vertecies  + (target -> targetVertex) ++ dependentVertecies)
       }
     }
